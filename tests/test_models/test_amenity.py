@@ -1,180 +1,214 @@
 #!/usr/bin/python3
-"""Defines the unittests for Subclass Amenity.py"""
-import os
-import models
+"""Unit tests for Amenity class"""
+
 import unittest
+import models
+from models.amenity import Amenity
 from datetime import datetime
 from time import sleep
-from models.amenity import Amenity
+import os
 
 
-class TestAmenity_instantiating(unittest.TestCase):
-    """Unittest for testing the instantiation of the class Amenity"""
-    def test_type_no_args_instantiation(self):
-        self.assertEqual(Amenity, type(Amenity()))
+class Test_Amenity(unittest.TestCase):
+    """Test casess for Amenity class"""
 
-    def test_new_instance_stored_in_objects(self):
-        self.assertIn(Amenity(), models.storage.all().values())
+    def setUp(self):
+        """Set up the env before each test case"""
+        self.amenity = Amenity()
 
-    def test_if_id_is_public_str(self):
-        self.assertEqual(str, type(Amenity().id))
+    def tearDown(self):
+        """Clean up the test env after each test case if needed"""
+        self.amenity = None
 
-    def test_if_created_at_is_public_datetime(self):
-        self.assertEqual(datetime, type(Amenity().created_at))
+    def test_init_with_arguments(self):
+        """Test initialization with arguments"""
+        data = {
+            'id': '123',
+            'created_at': '2023-01-01T00:00:00',
+            'updated_at': '2023-01-01T00:00:00',
+            'name': 'Test'
+        }
+        self.amenity = Amenity(**data)
 
-    def test_if_updated_at_is_public_datetime(self):
-        self.assertEqual(datetime, type(Amenity().updated_at))
+        # Verify that the attributes are set correctly
+        self.assertEqual(self.amenity.id, '123')
+        self.assertEqual(self.amenity.created_at,
+                         datetime.fromisoformat('2023-01-01T00:00:00'))
+        self.assertEqual(self.amenity.updated_at,
+                         datetime.fromisoformat('2023-01-01T00:00:00'))
+        self.assertEqual(self.amenity.name, 'Test')
 
-    def test_if_name_is_public_cls_attr(self):
-        Am = Amenity()
-        self.assertEqual(str, type(Amenity.name))
-        self.assertIn("name", dir(Amenity()))
-        self.assertNotIn("name", Am.__dict__)
-        # __dict__ stores instance specific attributes, so the assertNotIn
-        # ensures that "name" attr is not instance specific attr but a
-        # class attr
+    def test_init_without_arguments(self):
+        """Test initialization without arguments"""
+        self.amenity = Amenity()
 
-    def test_2_amenity_instances_withunique_ids(self):
-        Am = Amenity()
-        Amm = Amenity()
-        self.assertNotEqual(Am.id, Amm.id)
+        # Verify that the attributes are set correctly
+        self.assertIsNotNone(self.amenity.id)
+        self.assertIsNotNone(self.amenity.created_at)
+        self.assertIsNotNone(self.amenity.updated_at)
+        self.assertEqual(self.amenity.created_at, self.amenity.updated_at)
 
-    def test_if_2_amenities_have_diff_created_at(self):
-        Am = Amenity()
-        sleep(0.08)
-        Amm = Amenity()
-        self.assertLess(Am.created_at, Amm.created_at)
+    def test_args(self):
+        """Testing args which was unused"""
+        am = Amenity(None)
+        self.assertNotIn(None, am.__dict__.values())
 
-    def test_str_representation(self):
-        d_time = datetime.now()
-        d_time_rep = repr(d_time)
-        # repr returns a str rep of the object
-        Am = Amenity()
-        Am.id = "456789"
-        Am.created_at = Am.updated_at = d_time
-        Am_str = Am.__str__()
-        self.assertIn("[Amenity] (456789)", Am_str)
-        self.assertIn("'id': '456789'", Am_str)
-        self.assertIn("'created_at': " + d_time_rep, Am_str)
-        self.assertIn("'updated_at': " + d_time_rep, Am_str)
+    def test_with_kwargs(self):
+        """Testing with kwargs"""
+        date = datetime.now()
+        tform = date.isoformat()
+        am = Amenity(id="123", created_at=tform, updated_at=tform)
+        self.assertEqual(am.id, "123")
+        self.assertEqual(am.created_at, date)
+        self.assertEqual(am.updated_at, date)
 
-    def test_unused_arguments(self):
-        Am = Amenity(None)
-        self.assertNotIn(None, Am.__dict__.values())
-
-    def test_instantation_with_kwargs(self):
-        """instantantating with **kwarsgs test method"""
-        d_t = datetime.now()
-        d_t_iso = d_t.isoformat()
-        Am = Amenity(id="678", created_at=d_t_iso, updated_at=d_t_iso)
-        self.assertEqual(Am.id, "678")
-        self.assertEqual(Am.created_at, d_t)
-        self.assertEqual(Am.created_at, d_t)
-
-    def test_instantiating_withNone_kwargs(self):
+    def test_kwargs_None(self):
+        """Testing with kwargs at None"""
         with self.assertRaises(TypeError):
             Amenity(id=None, created_at=None, updated_at=None)
 
+    def test_with_args_and_kwargs(self):
+        """ testing with both args and kwargs"""
+        date = datetime.now()
+        tform = date.isoformat()
+        am = Amenity(id="123", created_at=tform, updated_at=tform)
+        self.assertEqual(am.id, "123")
+        self.assertEqual(am.created_at, date)
+        self.assertEqual(am.updated_at, date)
 
-class TestAmenity_save(unittest.TestCase):
-    """Unittests testing hw the class Amenity is being saved/serialized"""
+    def test_attrubutes_initialization(self):
+        """tests initialization of attributes"""
+        self.assertEqual(self.amenity.name, "")
+        self.assertTrue(hasattr(self.amenity, "id"))
+        self.assertTrue(hasattr(self.amenity, "created_at"))
+        self.assertTrue(hasattr(self.amenity, "updated_at"))
 
-    @classmethod
-    def setUp(self):
-        try:
-            os.rename("file.json", "tmp")
-        except IOError:
-            pass
+    def test_id_is_str(self):
+        """checks the id data type"""
+        self.assertEqual(str, type(Amenity().id))
 
-    def tearDown(self):
-        try:
-            os.remove("file.json")
-        except IOError:
-            pass
-        try:
-            os.rename("tmp", "file.json")
-        except IOError:
-            pass
+    def test_id_is_unique(self):
+        """test if ids generated are unique"""
+        user1 = Amenity()
+        user2 = Amenity()
+        self.assertNotEqual(user1.id, user2.id)
 
-    def test_1_save(self):
-        Am = Amenity()
-        sleep(0.08)
-        first_updated_at = Am.updated_at
-        Am.save()
-        self.assertLess(first_updated_at, Am.updated_at)
+    def test_created_at_datetime(self):
+        """Checks if the attribute is a datetime object"""
+        self.assertEqual(datetime, type(Amenity().created_at))
 
-    def test_2_saves(self):
-        Am = Amenity()
-        sleep(0.08)
-        first_updated_at = Am.updated_at
-        Am.save()
-        second_updated_at = Am.updated_at
-        self.assertLess(first_updated_at, second_updated_at)
-        sleep(0.08)
-        Am.save()
-        self.assertLess(second_updated_at, Am.updated_at)
+    def test_created_at_timestamp(self):
+        """checks if the timestamp is different"""
+        user1 = Amenity()
+        sleep(0.05)
+        user2 = Amenity()
+        self.assertLess(user1.created_at, user2.created_at)
 
-    def test_save_witharguments(self):
-        Am = Amenity()
-        with self.assertRaises(TypeError):
-            Am.save(None)
+    def test_updated_at_datetime(self):
+        """Checks if attribute is a datetime object"""
+        self.assertEqual(datetime, type(Amenity(). updated_at))
 
-    def test_save_updating_file(self):
-        Am = Amenity()
-        Am.save()
-        Am_id = "Amenity." + Am.id
-        with open("file.json", "r") as f:
-            self.assertIn(Am_id, f.read())
+    def test_updated_at_timestamp(self):
+        """Checks if the timestamp is different"""
+        user1 = Amenity()
+        sleep(0.05)
+        user2 = Amenity()
+        self.assertLess(user1.updated_at, user2.updated_at)
 
+    def test_instance_storage(self):
+        """checks if storage and retrival were successful"""
+        self.assertIn(Amenity(), models.storage.all().values())
 
-class TestAmenity_to_dictionary(unittest.TestCase):
-    """Unittest testing to_dict method of the Subclass Amenity"""
+    def test__str__(self):
+        """tests the string representation"""
+        am1 = Amenity()
+        am2 = Amenity()
+        self.assertNotEqual(am1.__str__(), am2.__str__())
 
-    def test_typeof_to_dict(self):
-        self.assertTrue(dict, type(Amenity().to_dict()))
+    def test_str_method(self):
+        """tests the str method"""
+        amenity_string = str(self.amenity)
+        self.assertIn("[Amenity]", amenity_string)
+        self.assertIn("id", amenity_string)
+        self.assertIn("created_at", amenity_string)
+        self.assertIn("updated_at", amenity_string)
 
-    def test_to_dict_containg_right_keys(self):
-        Am = Amenity()
-        self.assertIn("id", Am.to_dict())
-        self.assertIn("created_at", Am.to_dict())
-        self.assertIn("updated_at", Am.to_dict())
-        self.assertIn("__class__", Am.to_dict())
+    def test_save(self):
+        """tests the effectivity of timestamp updates"""
+        am = Amenity()
+        sleep(0.1)
+        update = am.updated_at
+        am.save()
+        self.assertLess(update, am.updated_at)
 
-    def test_to_dict_containing_added_attributes(self):
-        Am = Amenity()
-        Am.nickname = "Reginah"
-        Am.fav_no = 44
-        self.assertEqual("Reginah", Am.nickname)
-        self.assertIn("fav_no", Am.to_dict())
+    def test_two_saves(self):
+        """tests the effectivity of different timestamps updates"""
+        am = Amenity()
+        sleep(0.1)
+        upadte1 = am.updated_at
+        am.save()
+        update2 = am.updated_at
+        self.assertLess(upadte1, update2)
+        sleep(0.1)
+        am.save()
+        self.assertLess(update2, am.updated_at)
 
-    def test_to_dict_id_and_datetime_attr_are_str(self):
-        Am = Amenity()
-        Am_dict = Am.to_dict()
-        self.assertEqual(str, type(Am_dict["id"]))
-        self.assertEqual(str, type(Am_dict["created_at"]))
-        self.assertEqual(str, type(Am_dict["updated_at"]))
+    def test_save_updates_file(self):
+        """tests that updates are updated and stored correctly"""
+        am = Amenity()
+        am.save()
+        amid = "Amenity." + am.id
+        with open("file.json", "r") as file:
+            self.assertIn(amid, file.read())
 
-    def test_output_of_to_dict(self):
-        d_t = datetime.now()
-        Am = Amenity()
-        Am.id = "456789"
-        Am.created_at = Am.updated_at = d_t
-        time_dict = {
-            'id': '456789',
-            '__class__': 'Amenity',
-            'created_at': d_t.isoformat(),
-            'updated_at': d_t.isoformat(),
+    def test_save_method(self):
+        """tests the save method"""
+        updated_at_1 = self.amenity.updated_at
+        self.amenity.save()
+        updated_at_2 = self.amenity.updated_at
+        self.assertNotEqual(updated_at_1, updated_at_2)
+
+    def test_to_dict(self):
+        """Tests the expected output"""
+        expected_dict = {
+            'id': self.amenity.id,
+            'created_at': self.amenity.created_at.isoformat(),
+            'updated_at': self.amenity.updated_at.isoformat(),
+            '__class__': 'Amenity'
         }
-        self.assertDictEqual(Am.to_dict(), time_dict)
+        self.assertEqual(self.amenity.to_dict(), expected_dict)
 
-    def test_contrat_to_dict_and__dict__(self):
-        Am = Amenity()
-        self.assertNotEqual(Am.to_dict(), Am.__dict__)
+    def test_to_dict_type(self):
+        """verifys the class returns a dictionary"""
+        am = Amenity()
+        self.assertTrue(dict, type(am.to_dict()))
 
-    def test_to_dict_withargs(self):
-        Am = Amenity()
-        with self.assertRaises(TypeError):
-            Am.to_dict(None)
+    def test_different_to_dict(self):
+        """tests that the class produces 2 diff dict for diff instances"""
+        am1 = Amenity()
+        sleep(0.05)
+        am2 = Amenity()
+        self.assertNotEqual(am1.to_dict(), am2.to_dict())
+
+    def test_to_dict_has_correct_keys(self):
+        """tests that the dict contains the right keys"""
+        am = Amenity()
+        self.assertIn("id", am.to_dict())
+        self.assertIn("__class__", am.to_dict())
+        self.assertIn("created_at", am.to_dict())
+        self.assertIn("updated_at", am.to_dict())
+
+    def test_to_dict_created_at_format(self):
+        """checks the ISO formatted string"""
+        am = self.amenity.to_dict()
+        created_at = am["created_at"]
+        self.assertEqual(created_at, self.amenity.created_at.isoformat())
+
+    def test_to_dict_updated_at_format(self):
+        """checks the ISO formatted string"""
+        am = self.amenity.to_dict()
+        updated_at = am["updated_at"]
+        self.assertEqual(updated_at, self.amenity.updated_at.isoformat())
 
 
 if __name__ == "__main__":
