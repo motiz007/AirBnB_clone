@@ -12,8 +12,15 @@ from models.review import Review
 from models.state import State
 from models.user import User
 
-my_classes = {"Amenity": Amenity, "BaseModel": BaseModel, "City": City,
-           "Place": Place, "Review": Review, "State": State, "User": User}
+my_classes = {
+    "Amenity": Amenity,
+    "BaseModel": BaseModel,
+    "City": City,
+    "Place": Place,
+    "Review": Review,
+    "State": State,
+    "User": User
+    }
 
 
 class FileStorage:
@@ -48,6 +55,8 @@ class FileStorage:
             with open(self.__file_path, 'r') as fd:
                 json_dict = json.load(fd)
             for key in json_dict:
-                self.__objects[key] = my_classes[json_dict[key]["__class__"]](**json_dict[key])
-        except:
+                self.__objects[key] = (my_classes[json_dict
+                                                  [key]["__class__"]]
+                                       (**json_dict[key]))
+        except FileNotFoundError:
             pass

@@ -10,6 +10,7 @@ class Amenity(BaseModel):
     has one attribute - name(empty string)
     """
     name = ""
+
     def __init__(self, *args, **kwargs):
         """initializes Amenity"""
         super().__init__(*args, **kwargs)

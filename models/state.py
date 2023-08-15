@@ -10,6 +10,7 @@ class State(BaseModel):
     represents a state, takes one atrr - name of the state
     """
     name = ""
+
     def __init__(self, *args, **kwargs):
         """initializes city"""
         super().__init__(*args, **kwargs)
